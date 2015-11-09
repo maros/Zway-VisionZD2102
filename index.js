@@ -128,17 +128,19 @@ VisionZD2102.prototype.stop = function () {
 VisionZD2102.prototype.handleDevice = function(zway,device,instance) {
     var self = this;
     
-    vDevId = 'VisionZD2102' + device.id +'_'+instance.id;
+    vDevId = 'VisionZD2102_' + device.id +'_'+instance.id;
     
     if (! self.controller.devices.get(vDevId)) {
         var vDev = self.controller.devices.create({
             deviceId: vDevId,
             defaults: {
-                probeTitle: 'General purpose',
-                scaleTitle: '',
-                icon: 'motion',
-                level: '',
-                title: 'Vision ZD2102 secondary input'
+                metrics: {
+                    probeTitle: 'General purpose',
+                    scaleTitle: '',
+                    icon: 'motion',
+                    level: 'off',
+                    title: 'Vision ZD2102 secondary input'
+                }
             },
             overlay: {
                 deviceType: 'sensorBinary'
@@ -147,12 +149,19 @@ VisionZD2102.prototype.handleDevice = function(zway,device,instance) {
         });
         
         if (vDev) {
-            var dataHolder = instance.commandClasses[self.commandClass].data[7];
+            var dataHolder = instance.commandClasses[self.commandClass].data; // Does not fire. Why?
+            console.logJS(dataHolder);
             self.devices[vDevId] = vDev;
             self.bindings.push({
                 data:       dataHolder,
                 func:       dataHolder.bind(function(type) {
                     console.log('[VisionZD2102] Change event');
+                    var alarmType   = this.V1event.alarmType.value;
+                    var alarmSource = this[alarmType].event.value;
+                    var alarmLevel  = this.V1event.level.value;
+                    if (alarmSource === 254) {
+                        vDev.set("metrics:level", alarmLevel === 0 ? "off" : "on");
+                    }
                     console.logJS(this);
                 })
             });
@@ -160,14 +169,3 @@ VisionZD2102.prototype.handleDevice = function(zway,device,instance) {
     }
 };
 
-/*
-[2015-11-07 12:38:41.612] [D] [zway] SETDATA devices.15.instances.0.commandClasses.113.data.V1event.alarmType = 7 (0x00000007)
-[2015-11-07 12:38:41.612] [D] [zway] SETDATA devices.15.instances.0.commandClasses.113.data.V1event.level = 0 (0x00000000)
-[2015-11-07 12:38:41.613] [D] [zway] SETDATA devices.15.instances.0.commandClasses.113.data.V1event = Empty
-[2015-11-07 12:38:41.613] [D] [zway] SETDATA devices.15.instances.0.commandClasses.113.data.7.eventParameters = byte[0]
-[2015-11-07 12:38:41.614] [D] [zway]   ( zero-length buffer )
-[2015-11-07 12:38:41.614] [D] [zway] SETDATA devices.15.instances.0.commandClasses.113.data.7.event = 2 (0x00000002)
-[2015-11-07 12:38:41.617] [D] [zway] SETDATA devices.15.instances.0.commandClasses.113.data.7.eventString = "Intrusion, location unknown"
-[2015-11-07 12:38:41.617] [D] [zway] SETDATA devices.15.instances.0.commandClasses.113.data.7.status = 255 (0x000000ff)
-[2015-11-07 12:38:41.618] [D] [zway] SETDATA devices.15.instances.0.commandClasses.113.data.7 = Empty
-*/
