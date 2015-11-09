@@ -1,0 +1,29 @@
+{
+   "author" : "Maroš Kollár",
+   "category" : "support_external_dev",
+   "defaults" : {
+      "description" : "__description__",
+      "title" : "__title__"
+   },
+   "dependencies" : [ ],
+   "homepage" : "http://k-1.com",
+   "icon" : "icon.png",
+   "maturity" : "stable",
+   "moduleName" : "VisionZD2102",
+   "options" : {
+      "fields" : {
+      }
+   },
+   "repository" : {
+      "source" : "https://github.com/maros/Zway-VisionZD2102",
+      "type" : "git"
+   },
+   "schema" : {
+      "properties" : {
+      },
+      "required": true,
+      "type" : "object"
+   },
+   "singleton" : true,
+   "version" : "1.00"
+}
