@@ -17,6 +17,18 @@ Description:
 function VisionZD2102 (id, controller) {
     // Call superconstructor first (AutomationModule)
     VisionZD2102.super_.call(this, id, controller);
+    
+    this.commandClass           = 0x71;
+    this.manufacturerId         = 0x0109;
+    this.manufacturerProductId  = [
+       0x0101,
+       0x0102,
+       0x0104,
+       0x0105
+    ];
+    
+    this.bindings   = [];
+    this.devices    = {};
 }
 
 inherits(VisionZD2102, AutomationModule);
@@ -32,35 +44,42 @@ VisionZD2102.prototype.init = function(config) {
 
     var self = this;
 
-    this.ZWAY_DATA_CHANGE_TYPE = {   
-        "Updated": 0x01,       // Value updated or child created
-        "Invalidated": 0x02,   // Value invalidated             
-        "Deleted": 0x03,       // Data holder deleted - callback is called last time before being deleted
-        "ChildCreated": 0x04,  // New direct child node created                                          
-                                                                                                         
-        // ORed flags                                                                                    
-        "PhantomUpdate": 0x40, // Data holder updated with same value (only updateTime changed)          
-        "ChildEvent": 0x80     // Event from child node                                                  
-    };
     
-    this.CC = {
-        "Alarm": 0x71
+    this.zwayBind = function(dataBindings, zwayName, nodeId, instanceId, commandClassId, path, func, type) {
+        console.log('[VisionZD2102] Bind' + zwayName);
     };
-    
-    this.zwayRegister = function(zwayName) {
-        var zway = global.ZWave && global.ZWave[zwayName].zway;
+    this.zwayUnbind = function(dataBindings) {
+        console.log('[VisionZD2102] Unbind');
+    };
         
+    this.zwayReg = function (zwayName) {
+        var zway = global.ZWave && global.ZWave[zwayName].zway;
         if (!zway) {
             return;
         }
-       
-        if (!zway.ZMELEDBTN) {
-            return;
+        
+        console.log('[VisionZD2102] Registering '+zwayName);
+        for(deviceIndex in zway.devices) {
+            var device = zway.devices[deviceIndex];
+            
+            if (typeof(device) !== 'undefined'
+                && device.data.manufacturerId.value == self.manufacturerId
+                && _.indexOf(self.manufacturerProductId, device.data.manufacturerProductId.value) >= 0) {
+                
+                for(instanceIndex in device.instances) {
+                    var instance = device.instances[instanceIndex];
+                    if (typeof(instance.commandClasses[self.commandClass.toString()]) !== 'undefined') {
+                        console.log('[VisionZD2102] Adding devices.'+deviceIndex+'.instances.'+instanceIndex);
+                        self.handleDevice(zway,device,instance);
+                    }
+                }
+            }
         }
-        // TODO
+        
+        self.bindings[zwayName] = [];
     };
     
-    this.zwayUnregister = function(zwayName) {
+    this.zwayUnreg = function(zwayName) {
         // detach handlers
         if (self.bindings[zwayName]) {
             self.controller.emit("ZWave.dataUnbind", self.bindings[zwayName]);
@@ -68,35 +87,78 @@ VisionZD2102.prototype.init = function(config) {
         self.bindings[zwayName] = null;
     };
     
-    this.controller.on("ZWave.register", this.zwayRegister);
-    this.controller.on("ZWave.unregister", this.zwayUnregister);
-
+    //this.controller.on("ZWave.register", this.zwayReg);
+    //this.controller.on("ZWave.unregister", this.zwayUnreg);
+    this.controller.on("ZWave.dataBind", this.zwayBind);
+    this.controller.on("ZWave.dataUnbind", this.zwayUnbind);
+    
     // walk through existing ZWave
     if (global.ZWave) {
         for (var name in global.ZWave) {
-            this.zwayRegister(name);
+            this.zwayReg(name);
         }
     }
-}
+};
 
 VisionZD2102.prototype.stop = function () {
-    // unsign event handlers
-    this.controller.off("ZWave.register", this.zwayReg);
-    this.controller.off("ZWave.unregister", this.zwayUnreg);
-
-    // detach handlers
-    for (var name in this.bindings) {
-        this.controller.emit("ZWave.dataUnbind", this.bindings[name]);
-    }
+    var self = this;
     
-    this.bindings = [];
-
+    // unsign event handlers
+    self.controller.off("ZWave.dataBind", self._dataBind);
+    self.controller.off("ZWave.dataUnbind", self._dataUnbind);
+    
+    _.each(self.devices,function(deviceId,vDev) {
+        self.controller.devices.remove(vDevId);
+    });
+    
+    _.each(self.bindings,function(binding) {
+        binding.data.unbind(binding.func);
+    });
+    
+    self.bindings = [];
+    self.devices = {};
+    
     VisionZD2102.super_.prototype.stop.call(this);
 };
 
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
+
+VisionZD2102.prototype.handleDevice = function(zway,device,instance) {
+    var self = this;
+    
+    vDevId = 'VisionZD2102' + device.id +'_'+instance.id;
+    
+    if (! self.controller.devices.get(vDevId)) {
+        var vDev = self.controller.devices.create({
+            deviceId: vDevId,
+            defaults: {
+                probeTitle: 'General purpose',
+                scaleTitle: '',
+                icon: 'motion',
+                level: '',
+                title: 'Vision ZD2102 secondary input'
+            },
+            overlay: {
+                deviceType: 'sensorBinary'
+            },
+            moduleId: self.id
+        });
+        
+        if (vDev) {
+            var dataHolder = instance.commandClasses[self.commandClass].data[7];
+            self.devices[vDevId] = vDev;
+            self.bindings.push({
+                data:       dataHolder,
+                func:       dataHolder.bind(function(type) {
+                    console.log('[VisionZD2102] Change event');
+                    console.logJS(this);
+                })
+            });
+        }
+    }
+};
 
 /*
 [2015-11-07 12:38:41.612] [D] [zway] SETDATA devices.15.instances.0.commandClasses.113.data.V1event.alarmType = 7 (0x00000007)
