@@ -18,6 +18,7 @@ function VisionZD2102 (id, controller) {
     // Call superconstructor first (AutomationModule)
     VisionZD2102.super_.call(this, id, controller);
     
+    this.langFile               = undefined;
     this.commandClass           = 0x71;
     this.manufacturerId         = 0x0109;
     this.manufacturerProductId  = [
@@ -44,20 +45,14 @@ VisionZD2102.prototype.init = function(config) {
     
     var self = this;
     
-    this.zwayBind = function(dataBindings, zwayName, nodeId, instanceId, commandClassId, path, func, type) {
-        console.log('[VisionZD2102] Bind' + zwayName);
-    };
-    this.zwayUnbind = function(dataBindings) {
-        console.log('[VisionZD2102] Unbind');
-    };
-        
+    self.langFile           = self.controller.loadModuleLang("ThermostatControl");
+    
     this.zwayReg = function (zwayName) {
         var zway = global.ZWave && global.ZWave[zwayName].zway;
         if (!zway) {
             return;
         }
         
-        console.log('[VisionZD2102] Registering '+zwayName);
         for(deviceIndex in zway.devices) {
             var device = zway.devices[deviceIndex];
             
@@ -86,8 +81,6 @@ VisionZD2102.prototype.init = function(config) {
     
     this.controller.on("ZWave.register", this.zwayReg);
     this.controller.on("ZWave.unregister", this.zwayUnreg);
-    this.controller.on("ZWave.dataBind", this.zwayBind);
-    this.controller.on("ZWave.dataUnbind", this.zwayUnbind);
     
     // walk through existing ZWave
     if (global.ZWave) {
@@ -103,8 +96,6 @@ VisionZD2102.prototype.stop = function () {
     // unsign event handlers
     this.controller.off("ZWave.register", this.zwayReg);
     this.controller.off("ZWave.unregister", this.zwayUnreg);
-    self.controller.off("ZWave.dataBind", self._dataBind);
-    self.controller.off("ZWave.dataUnbind", self._dataUnbind);
     
     _.each(self.devices,function(deviceId,vDev) {
         self.controller.devices.remove(vDevId);
@@ -114,8 +105,10 @@ VisionZD2102.prototype.stop = function () {
         binding.data.unbind(binding.func);
     });
     
-    self.bindings = [];
-    self.devices = {};
+    this.zwayReg    = undefined;
+    this.zwayUnreg  = undefined;
+    this.bindings   = [];
+    this.devices    = {};
     
     VisionZD2102.super_.prototype.stop.call(this);
 };
@@ -139,7 +132,7 @@ VisionZD2102.prototype.handleDevice = function(zway,device,instance) {
                     scaleTitle: '',
                     icon: 'motion',
                     level: 'off',
-                    title: 'Vision ZD2102 secondary input'
+                    title: this.langFile.device_secondary
                 }
             },
             overlay: {

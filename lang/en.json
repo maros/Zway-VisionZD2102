@@ -1,4 +1,5 @@
 {
    "description" : "Full support for the Vision ZD2102 door/window sensor",
-   "title" : "Vision ZD2102"
+   "title" : "Vision ZD2102",
+   "device_secondary": "Vision ZD2102 secondary"
 }
