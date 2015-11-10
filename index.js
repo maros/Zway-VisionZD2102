@@ -41,9 +41,8 @@ _module = VisionZD2102;
 
 VisionZD2102.prototype.init = function(config) {
     VisionZD2102.super_.prototype.init.call(this, config);
-
+    
     var self = this;
-
     
     this.zwayBind = function(dataBindings, zwayName, nodeId, instanceId, commandClassId, path, func, type) {
         console.log('[VisionZD2102] Bind' + zwayName);
@@ -75,8 +74,6 @@ VisionZD2102.prototype.init = function(config) {
                 }
             }
         }
-        
-        self.bindings[zwayName] = [];
     };
     
     this.zwayUnreg = function(zwayName) {
@@ -87,8 +84,8 @@ VisionZD2102.prototype.init = function(config) {
         self.bindings[zwayName] = null;
     };
     
-    //this.controller.on("ZWave.register", this.zwayReg);
-    //this.controller.on("ZWave.unregister", this.zwayUnreg);
+    this.controller.on("ZWave.register", this.zwayReg);
+    this.controller.on("ZWave.unregister", this.zwayUnreg);
     this.controller.on("ZWave.dataBind", this.zwayBind);
     this.controller.on("ZWave.dataUnbind", this.zwayUnbind);
     
@@ -104,6 +101,8 @@ VisionZD2102.prototype.stop = function () {
     var self = this;
     
     // unsign event handlers
+    this.controller.off("ZWave.register", this.zwayReg);
+    this.controller.off("ZWave.unregister", this.zwayUnreg);
     self.controller.off("ZWave.dataBind", self._dataBind);
     self.controller.off("ZWave.dataUnbind", self._dataUnbind);
     
@@ -131,6 +130,7 @@ VisionZD2102.prototype.handleDevice = function(zway,device,instance) {
     vDevId = 'VisionZD2102_' + device.id +'_'+instance.id;
     
     if (! self.controller.devices.get(vDevId)) {
+        console.log('[VisionZD2102] Add device');
         var vDev = self.controller.devices.create({
             deviceId: vDevId,
             defaults: {
