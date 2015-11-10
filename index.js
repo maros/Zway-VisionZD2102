@@ -149,13 +149,31 @@ VisionZD2102.prototype.handleDevice = function(zway,device,instance) {
         });
         
         if (vDev) {
-            var dataHolder = instance.commandClasses[self.commandClass].data; // Does not fire. Why?
-            console.logJS(dataHolder);
             self.devices[vDevId] = vDev;
+            var dataHolderEvent = instance.commandClasses[self.commandClass].data.V1event;
+            var deviceId        = device.id;
+            var instanceId      = instance.id;
+            
+            self.bindings.push({
+                data:       dataHolderEvent,
+                func:       dataHolderEvent.bind(function(type) {
+                    console.log('[VisionZD2102] Change event');
+                    var alarmType   = this.alarmType.value;
+                    var alarmSource = instance.commandClasses[self.commandClass].data[alarmType].event.value;
+                    var alarmLevel  = this.level.value;
+                    if (alarmSource === 254) {
+                        console.log('[VisionZD2102] Change event matters');
+                        vDev.set("metrics:level", alarmLevel === 0 ? "off" : "on");
+                    }
+                    console.logJS(this);
+                })
+            });
+            /*
+            var dataHolder = instance.commandClasses[self.commandClass].data; // Does not fire. Why?
             self.bindings.push({
                 data:       dataHolder,
                 func:       dataHolder.bind(function(type) {
-                    console.log('[VisionZD2102] Change event');
+                    console.log('[VisionZD2102] Change event top');
                     var alarmType   = this.V1event.alarmType.value;
                     var alarmSource = this[alarmType].event.value;
                     var alarmLevel  = this.V1event.level.value;
@@ -165,6 +183,7 @@ VisionZD2102.prototype.handleDevice = function(zway,device,instance) {
                     console.logJS(this);
                 })
             });
+            */
         }
     }
 };
