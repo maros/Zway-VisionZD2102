@@ -12,6 +12,17 @@
    "moduleName" : "VisionZD2102",
    "options" : {
       "fields" : {
+          "banned": {
+              "label": "__banned_label__",
+              "fields": {
+                  "item": {
+                      "type": "select",
+                      "datasource": "namespaces",
+                      "field": "optionLabels",
+                      "optionLabels": "namespaces:devices_binarySensor:deviceName"
+                  }
+              }
+          }
       }
    },
    "repository" : {
@@ -20,6 +31,15 @@
    },
    "schema" : {
       "properties" : {
+          "banned": {
+              "type": "array",
+              "items": {
+                  "field": "enum",
+                  "datasource": "namespaces",
+                  "enum": "namespaces:devices_binarySensor:deviceId",
+                  "required": true
+              }
+          }
       },
       "required": true,
       "type" : "object"

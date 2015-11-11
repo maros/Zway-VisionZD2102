@@ -28,8 +28,10 @@ function VisionZD2102 (id, controller) {
        0x0105
     ];
     
-    this.bindings   = [];
     this.devices    = {};
+    this.bindings   = [];
+    this.banned     = [];
+    
 }
 
 inherits(VisionZD2102, AutomationModule);
@@ -45,7 +47,8 @@ VisionZD2102.prototype.init = function(config) {
     
     var self = this;
     
-    self.langFile           = self.controller.loadModuleLang("ThermostatControl");
+    self.langFile   = self.controller.loadModuleLang("ThermostatControl");
+    this.banned     = config.banned || [];
     
     this.zwayReg = function (zwayName) {
         var zway = global.ZWave && global.ZWave[zwayName].zway;
@@ -122,7 +125,8 @@ VisionZD2102.prototype.handleDevice = function(zway,device,instance) {
     
     vDevId = 'VisionZD2102_' + device.id +'_'+instance.id;
     
-    if (! self.controller.devices.get(vDevId)) {
+    if (! self.controller.devices.get(vDevId)
+        && _.indexOf(self.banned(),vDevId) === -1) {
         console.log('[VisionZD2102] Add device');
         var vDev = self.controller.devices.create({
             deviceId: vDevId,
