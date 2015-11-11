@@ -47,10 +47,10 @@ VisionZD2102.prototype.init = function(config) {
     
     var self = this;
     
-    self.langFile   = self.controller.loadModuleLang("ThermostatControl");
-    this.banned     = config.banned || [];
+    self.langFile   = self.controller.loadModuleLang("VisionZD2102");
+    self.banned     = config.banned || [];
     
-    this.zwayReg = function (zwayName) {
+    self.zwayReg = function (zwayName) {
         var zway = global.ZWave && global.ZWave[zwayName].zway;
         if (!zway) {
             return;
@@ -63,18 +63,15 @@ VisionZD2102.prototype.init = function(config) {
                 && device.data.manufacturerId.value == self.manufacturerId
                 && _.indexOf(self.manufacturerProductId, device.data.manufacturerProductId.value) >= 0) {
                 
-                for(instanceIndex in device.instances) {
-                    var instance = device.instances[instanceIndex];
-                    if (typeof(instance.commandClasses[self.commandClass.toString()]) !== 'undefined') {
-                        console.log('[VisionZD2102] Adding devices.'+deviceIndex+'.instances.'+instanceIndex);
-                        self.handleDevice(zway,device,instance);
-                    }
+                if (typeof(device.instances[0].commandClasses[self.commandClass.toString()]) !== 'undefined') {
+                    console.log('[VisionZD2102] Adding devices.'+deviceIndex+'.instances.0');
+                    self.handleDevice(zway,device);
                 }
             }
         }
     };
     
-    this.zwayUnreg = function(zwayName) {
+    self.zwayUnreg = function(zwayName) {
         // detach handlers
         if (self.bindings[zwayName]) {
             self.controller.emit("ZWave.dataUnbind", self.bindings[zwayName]);
@@ -120,15 +117,28 @@ VisionZD2102.prototype.stop = function () {
 // --- Module methods
 // ----------------------------------------------------------------------------
 
-VisionZD2102.prototype.handleDevice = function(zway,device,instance) {
+VisionZD2102.prototype.checkDevice = function(device) {
     var self = this;
     
-    vDevId = 'VisionZD2102_' + device.id +'_'+instance.id;
+    var dataHolder  = device.instances[0].commandClasses[self.commandClass].data;
+    var alarmType   = dataHolder.V1event.alarmType.value;
+    var alarmSource = dataHolder[alarmType].event.value;
+    var alarmLevel  = dataHolder.V1event.level.value;
+    if (alarmSource === 254) {
+        console.log('[VisionZD2102] Change event matters');
+        self.devices[device.id].set("metrics:level", alarmLevel === 0 ? "off" : "on");
+    }
+}
+
+VisionZD2102.prototype.handleDevice = function(zway,device) {
+    var self = this;
+    
+    vDevId = 'VisionZD2102_' + device.id;
     
     if (! self.controller.devices.get(vDevId)
-        && _.indexOf(self.banned(),vDevId) === -1) {
+        && _.indexOf(self.banned,vDevId) === -1) {
         console.log('[VisionZD2102] Add device');
-        var vDev = self.controller.devices.create({
+        var deviceObject = self.controller.devices.create({
             deviceId: vDevId,
             defaults: {
                 metrics: {
@@ -136,7 +146,7 @@ VisionZD2102.prototype.handleDevice = function(zway,device,instance) {
                     scaleTitle: '',
                     icon: 'motion',
                     level: 'off',
-                    title: this.langFile.device_secondary
+                    title: self.langFile.device_secondary
                 }
             },
             overlay: {
@@ -145,26 +155,19 @@ VisionZD2102.prototype.handleDevice = function(zway,device,instance) {
             moduleId: self.id
         });
         
-        if (vDev) {
-            self.devices[vDevId] = vDev;
-            var dataHolderEvent = instance.commandClasses[self.commandClass].data.V1event;
-            var deviceId        = device.id;
-            var instanceId      = instance.id;
+        if (deviceObject) {
+            self.devices[device.id] = deviceObject;
+            var dataHolder      = device.instances[0].commandClasses[self.commandClass].data;
+            var dataHolderEvent = dataHolder.V1event;
             
             self.bindings.push({
                 data:       dataHolderEvent,
                 func:       dataHolderEvent.bind(function(type) {
                     console.log('[VisionZD2102] Change event');
-                    var alarmType   = this.alarmType.value;
-                    var alarmSource = instance.commandClasses[self.commandClass].data[alarmType].event.value;
-                    var alarmLevel  = this.level.value;
-                    if (alarmSource === 254) {
-                        console.log('[VisionZD2102] Change event matters');
-                        vDev.set("metrics:level", alarmLevel === 0 ? "off" : "on");
-                    }
-                    console.logJS(this);
+                    self.checkDevice(device);
                 })
             });
+            self.checkDevice(device);
             /*
             var dataHolder = instance.commandClasses[self.commandClass].data; // Does not fire. Why?
             self.bindings.push({
