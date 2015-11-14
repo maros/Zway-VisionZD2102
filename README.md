@@ -7,7 +7,9 @@ state of the secondary external sensor input.
 
 # Configuration
 
-None
+## banned
+
+A list of sensors that should not be created
 
 # Events
 
