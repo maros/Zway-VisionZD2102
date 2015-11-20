@@ -1,6 +1,6 @@
 {
    "author" : "Maroš Kollár",
-   "category" : "support_external_dev",
+   "category" : "legacy_products_workaround",
    "defaults" : {
       "description" : "__description__",
       "title" : "__title__"
