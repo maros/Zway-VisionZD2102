@@ -56,7 +56,7 @@ VisionZD2102.prototype.init = function(config) {
             return;
         }
         
-        for(deviceIndex in zway.devices) {
+        for(var deviceIndex in zway.devices) {
             var device = zway.devices[deviceIndex];
             
             if (typeof(device) !== 'undefined'
@@ -128,7 +128,7 @@ VisionZD2102.prototype.checkDevice = function(device) {
         console.log('[VisionZD2102] Change event matters');
         self.devices[device.id].set("metrics:level", alarmLevel === 0 ? "off" : "on");
     }
-}
+};
 
 VisionZD2102.prototype.handleDevice = function(zway,device) {
     var self = this;
