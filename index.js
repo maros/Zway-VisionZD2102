@@ -135,12 +135,12 @@ VisionZD2102.prototype.handleDevice = function(zway,device) {
     
     vDevId = 'VisionZD2102_' + device.id;
     
-    if (! self.controller.devices.get(vDevId)
-        && _.indexOf(self.banned,vDevId) === -1) {
+    if (! self.controller.devices.get(vDevId)) {
         console.log('[VisionZD2102] Add device');
         var deviceObject = self.controller.devices.create({
             deviceId: vDevId,
             defaults: {
+                
                 metrics: {
                     probeTitle: 'General purpose',
                     scaleTitle: '',
@@ -150,6 +150,7 @@ VisionZD2102.prototype.handleDevice = function(zway,device) {
                 }
             },
             overlay: {
+                visibility: (_.indexOf(self.banned,vDevId) === -1 ? true:false),
                 deviceType: 'sensorBinary'
             },
             moduleId: self.id
