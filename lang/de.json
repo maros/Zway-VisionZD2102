@@ -1,6 +1,6 @@
 {
-   "description" : "Full support for using external sensors with the Vision ZD2102 door/window sensor",
+   "description" : "Volle Unterstützung für die sekundären Kontakte von Vision ZD2102 Tür/Fenster Sensoren.",
    "title" : "Vision ZD2102",
-   "device_secondary": "Vision ZD2102 secondary",
-   "banned_label": "Excluded devices"
+   "device_secondary": "Vision ZD2102 sekundär",
+   "banned_label": "Ausgeschlossene Sensoren"
 }

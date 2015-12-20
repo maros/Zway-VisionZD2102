@@ -5,24 +5,24 @@
       "description" : "__description__",
       "title" : "__title__"
    },
-   "dependencies" : [ ],
+   "dependencies" : [],
    "homepage" : "http://k-1.com",
    "icon" : "icon.png",
    "maturity" : "stable",
    "moduleName" : "VisionZD2102",
    "options" : {
       "fields" : {
-          "banned": {
-              "label": "__banned_label__",
-              "fields": {
-                  "item": {
-                      "type": "select",
-                      "datasource": "namespaces",
-                      "field": "optionLabels",
-                      "optionLabels": "namespaces:devices_sensorBinary:deviceName"
-                  }
-              }
-          }
+         "banned" : {
+            "fields" : {
+               "item" : {
+                  "datasource" : "namespaces",
+                  "field" : "optionLabels",
+                  "optionLabels" : "namespaces:devices_sensorBinary:deviceName",
+                  "type" : "select"
+               }
+            },
+            "label" : "__banned_label__"
+         }
       }
    },
    "repository" : {
@@ -31,17 +31,17 @@
    },
    "schema" : {
       "properties" : {
-          "banned": {
-              "type": "array",
-              "items": {
-                  "field": "enum",
-                  "datasource": "namespaces",
-                  "enum": "namespaces:devices_sensorBinary:deviceId",
-                  "required": true
-              }
-          }
+         "banned" : {
+            "items" : {
+               "datasource" : "namespaces",
+               "enum" : "namespaces:devices_sensorBinary:deviceId",
+               "field" : "enum",
+               "required" : true
+            },
+            "type" : "array"
+         }
       },
-      "required": true,
+      "required" : true,
       "type" : "object"
    },
    "singleton" : true,
