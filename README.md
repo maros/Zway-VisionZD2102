@@ -1,9 +1,10 @@
 # Zway-VisionZD2102
 
-The ZD2102 has two normally closed contact terminals. Only the state of the 
-internal sensor is reflected in the UI. This module creates one additional 
-binary sensor for each Vision ZD2102 device in your network that reflects the
-state of the secondary external sensor input.
+The ZD2102 has two normally closed contact terminals. Due to a wrong device
+implementation only the state of the internal sensor is correctly shown in 
+the UI. This module creates one additional binary sensor for each Vision 
+ZD2102 device in your network that reflects the state of the secondary 
+external sensor input.
 
 # Configuration
 
