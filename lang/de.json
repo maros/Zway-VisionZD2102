@@ -1,6 +1,6 @@
 {
-   "m_descr" : "Volle Unterstützung für die sekundären Kontakte von Vision ZD2102 Tür/Fenster Sensoren.",
-   "m_title" : "Vision ZD2102",
-   "device_secondary": "Vision ZD2102 sekundär",
-   "banned_label": "Ausgeschlossene Sensoren"
+   "banned_label" : "Ausgeschlossene Sensoren",
+   "device_secondary" : "Vision ZD2102 sekundär",
+   "m_descr" : "Volle Unterstützung für die sekundären Kontakte von Vision ZD2102 Tür/Fenster Sensoren.\nSiehe https://github.com/maros/Zway-VisionZD2102//blob/master/README.md für detailliertere Dokumentation.",
+   "m_title" : "Vision ZD2102"
 }

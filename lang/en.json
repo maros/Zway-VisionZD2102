@@ -1,6 +1,6 @@
 {
-   "m_descr" : "Full support for using external sensors of the Vision ZD2102 door/window sensor",
-   "m_title" : "Vision ZD2102",
-   "device_secondary": "Vision ZD2102 secondary",
-   "banned_label": "Excluded devices"
+   "banned_label" : "Excluded devices",
+   "device_secondary" : "Vision ZD2102 secondary",
+   "m_descr" : "Full support for using external sensors of the Vision ZD2102 door/window sensor\nCheck https://github.com/maros/Zway-VisionZD2102//blob/master/README.md for detailed documentation.",
+   "m_title" : "Vision ZD2102"
 }
