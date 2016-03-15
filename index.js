@@ -28,10 +28,9 @@ function VisionZD2102 (id, controller) {
        0x0105
     ];
     
-    this.devices    = {};
-    this.bindings   = [];
-    this.banned     = [];
-    
+    this.devicesSecondary       = {};
+    this.devicesTamper          = {};
+    this.bindings               = [];
 }
 
 inherits(VisionZD2102, AutomationModule);
@@ -48,17 +47,17 @@ VisionZD2102.prototype.init = function(config) {
     var self = this;
     
     self.langFile   = self.controller.loadModuleLang("VisionZD2102");
-    self.banned     = config.banned || [];
-    
     self.zwayReg = function (zwayName) {
         var zway = global.ZWave && global.ZWave[zwayName].zway;
         if (!zway) {
             return;
         }
         
+        // Loop all devices 
         for(var deviceIndex in zway.devices) {
             var device = zway.devices[deviceIndex];
             
+            // Get manufacturer and product id
             if (typeof(device) !== 'undefined'
                 && device.data.manufacturerId.value == self.manufacturerId
                 && _.indexOf(self.manufacturerProductId, device.data.manufacturerProductId.value) >= 0) {
@@ -79,8 +78,8 @@ VisionZD2102.prototype.init = function(config) {
         self.bindings[zwayName] = null;
     };
     
-    this.controller.on("ZWave.register", this.zwayReg);
-    this.controller.on("ZWave.unregister", this.zwayUnreg);
+    self.controller.on("ZWave.register", self.zwayReg);
+    self.controller.on("ZWave.unregister", self.zwayUnreg);
     
     // walk through existing ZWave
     if (global.ZWave) {
@@ -97,18 +96,22 @@ VisionZD2102.prototype.stop = function () {
     this.controller.off("ZWave.register", this.zwayReg);
     this.controller.off("ZWave.unregister", this.zwayUnreg);
     
-    _.each(self.devices,function(deviceId,vDev) {
-        self.controller.devices.remove(vDevId);
+    _.each(self.devicesSecondary,function(deviceId,vDev) {
+        self.controller.devices.remove(deviceId);
+    });
+    _.each(self.devicesTamper,function(deviceId,vDev) {
+        self.controller.devices.remove(deviceId);
     });
     
     _.each(self.bindings,function(binding) {
         binding.data.unbind(binding.func);
     });
     
-    this.zwayReg    = undefined;
-    this.zwayUnreg  = undefined;
-    this.bindings   = [];
-    this.devices    = {};
+    this.zwayReg            = undefined;
+    this.zwayUnreg          = undefined;
+    this.bindings           = [];
+    this.devicesTamper      = {};
+    this.devicesSecondary   = {};
     
     VisionZD2102.super_.prototype.stop.call(this);
 };
@@ -123,69 +126,89 @@ VisionZD2102.prototype.checkDevice = function(device) {
     var dataHolder  = device.instances[0].commandClasses[self.commandClass].data;
     var alarmType   = dataHolder.V1event.alarmType.value;
     var alarmSource = dataHolder[alarmType].event.value;
-    var alarmLevel  = dataHolder.V1event.level.value;
+    var alarmLevel  = dataHolder.V1event.level.value  === 0 ? "off" : "on";
     if (alarmSource === 254) {
         console.log('[VisionZD2102] Change event matters');
-        self.devices[device.id].set("metrics:level", alarmLevel === 0 ? "off" : "on");
+        console.log('[VisionZD2102] Change event matters - external sensor');
+        self.devicesSecondary[device.id].set("metrics:level", alarmLevel);
+    } else if (alarmSource === 3 && self.devicesTamper[device.id]) {
+        console.log('[VisionZD2102] Change event matters - tamper');
+        self.devicesTamper[device.id].set("metrics:level", alarmLevel);
     }
 };
 
 VisionZD2102.prototype.handleDevice = function(zway,device) {
     var self = this;
     
-    vDevId = 'VisionZD2102_' + device.id;
+    var title               = device.data.givenName.value;
+    var vDevSecondaryId     = 'VisionZD2102_' + device.id;
+    var vDevTamperId        = 'VisionZD2102_' + device.id+'_tamper';
+    var deviceSecondaryObject;
+    var deviceTamperObject;
     
-    if (! self.controller.devices.get(vDevId)) {
-        console.log('[VisionZD2102] Add device');
-        var deviceObject = self.controller.devices.create({
-            deviceId: vDevId,
-            defaults: {
-                
-                metrics: {
-                    probeTitle: 'General purpose',
-                    scaleTitle: '',
-                    icon: 'motion',
-                    level: 'off',
-                    title: self.langFile.device_secondary
-                }
-            },
-            overlay: {
-                visibility: (_.indexOf(self.banned,vDevId) === -1 ? true:false),
-                deviceType: 'sensorBinary'
-            },
-            moduleId: self.id
+    if (! self.controller.devices.get(vDevSecondaryId)) {
+        console.log('[VisionZD2102] Add secondary device');
+        
+        deviceSecondaryObject = self.addDevice(vDevSecondaryId,{
+            probeType: "general_purpose",
+            metrics: {
+                icon: 'door',
+                title: self.langFile.device_secondary+' '+title
+            }
+        });
+        if (deviceSecondaryObject) {
+            self.devicesSecondary[device.id] = deviceSecondaryObject;
+        }
+    }
+    
+    if (self.config.tamper 
+        && ! self.controller.devices.get(vDevTamperId)) {
+        console.log('[VisionZD2102] Add tamper device');
+        
+        deviceTamperObject = self.addDevice(vDevTamperId,{
+            probeType: "alarm_burglar",
+            metrics: {
+                icon: 'alarm',
+                title: self.langFile.device_tamper+' '+title
+            }
         });
         
-        if (deviceObject) {
-            self.devices[device.id] = deviceObject;
-            var dataHolder      = device.instances[0].commandClasses[self.commandClass].data;
-            var dataHolderEvent = dataHolder.V1event;
-            
-            self.bindings.push({
-                data:       dataHolderEvent,
-                func:       dataHolderEvent.bind(function(type) {
-                    console.log('[VisionZD2102] Change event');
-                    self.checkDevice(device);
-                })
-            });
-            self.checkDevice(device);
-            /*
-            var dataHolder = instance.commandClasses[self.commandClass].data; // Does not fire. Why?
-            self.bindings.push({
-                data:       dataHolder,
-                func:       dataHolder.bind(function(type) {
-                    console.log('[VisionZD2102] Change event top');
-                    var alarmType   = this.V1event.alarmType.value;
-                    var alarmSource = this[alarmType].event.value;
-                    var alarmLevel  = this.V1event.level.value;
-                    if (alarmSource === 254) {
-                        vDev.set("metrics:level", alarmLevel === 0 ? "off" : "on");
-                    }
-                    console.logJS(this);
-                })
-            });
-            */
+        if (deviceTamperObject) {
+            self.devicesTamper[device.id] = deviceTamperObject;
         }
+    }
+    
+    if (deviceSecondaryObject || deviceTamperObject) {
+        var dataHolder      = device.instances[0].commandClasses[self.commandClass].data;
+        var dataHolderEvent = dataHolder.V1event;
+        
+        self.bindings.push({
+            data:       dataHolderEvent,
+            func:       dataHolderEvent.bind(function(type) {
+                console.log('[VisionZD2102] Change event');
+                self.checkDevice(device);
+            })
+        });
+        self.checkDevice(device);
     }
 };
 
+VisionZD2102.prototype.addDevice = function(vDevId,defaults) {
+    var self = this;
+    
+    defaults.metrics = _.extend(defaults.metrics,{
+        probeTitle:"General purpose",
+        scaleTitle: '',
+        level: 'off'
+    });
+    
+    return self.controller.devices.create({
+        deviceId: vDevId,
+        defaults: defaults,
+        overlay: {
+            visibility: (_.indexOf(self.config.banned,vDevId) === -1 ? true:false),
+            deviceType: 'sensorBinary'
+        },
+        moduleId: self.id
+    });
+};
