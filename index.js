@@ -112,6 +112,7 @@ VisionZD2102.prototype.stop = function () {
     this.bindings           = [];
     this.devicesTamper      = {};
     this.devicesSecondary   = {};
+    this.timeouts           = {};
     
     VisionZD2102.super_.prototype.stop.call(this);
 };
@@ -133,7 +134,19 @@ VisionZD2102.prototype.checkDevice = function(device) {
         self.devicesSecondary[device.id].set("metrics:level", alarmLevel);
     } else if (alarmSource === 3 && self.devicesTamper[device.id]) {
         console.log('[VisionZD2102] Change event matters - tamper');
-        self.devicesTamper[device.id].set("metrics:level", alarmLevel);
+        var tamperDevice = self.devicesTamper[device.id];
+        tamperDevice.set("metrics:level", alarmLevel);
+        if (alarmLevel === 'on') {
+            tamperDevice.set("metrics:offTime",Math.floor(new Date().getTime() / 1000)+ self.config.tamperReset);
+            if (typeof(self.timeouts[device.id]) !== 'undefined') {
+                clearTimeout(self.timeouts[device.id]);
+            }
+            self.timeouts[device.id] = setTimeout(function() {
+                self.timeouts[device.id] = undefined;
+                tamperDevice.set("metrics:level", 'off');
+                tamperDevice.set("metrics:offTime",null);
+            },1000*self.config.tamperReset);
+        }
     }
 };
 

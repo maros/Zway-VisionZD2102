@@ -4,7 +4,8 @@
    "defaults" : {
       "description" : "__m_descr__",
       "title" : "__m_title__",
-      "tamper": false
+      "tamper": false,
+      "tamperReset": 60
    },
    "dependencies" : [],
    "homepage" : "https://github.com/maros/Zway-VisionZD2102/",
@@ -17,6 +18,10 @@
               "label" : "__tamper_label__",
               "helper" : "__tamper_helper__"
          },
+         "tamperReset": {
+             "label" : "__tamper_reset_label__",
+             "helper" : "__tamper_reset_helper__"
+        },
          "banned" : {
             "fields" : {
                "item" : {
@@ -36,6 +41,9 @@
    },
    "schema" : {
       "properties" : {
+          "tamperReset": {
+              "type": "number"
+            },
          "tamper": {
            "type": "boolean"
          },
