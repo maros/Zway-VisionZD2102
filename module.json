@@ -13,7 +13,7 @@
    "maturity" : "stable",
    "moduleName" : "VisionZD2102",
    "options" : {
-      "fields" : {
+      "fields":{
          "tamper": {
               "label" : "__tamper_label__",
               "helper" : "__tamper_helper__"
@@ -21,7 +21,7 @@
          "tamperReset": {
              "label" : "__tamper_reset_label__",
              "helper" : "__tamper_reset_helper__"
-        },
+         },
          "banned" : {
             "fields" : {
                "item" : {
@@ -41,9 +41,9 @@
    },
    "schema" : {
       "properties" : {
-          "tamperReset": {
-              "type": "number"
-            },
+         "tamperReset": {
+           "type": "number"
+         },
          "tamper": {
            "type": "boolean"
          },

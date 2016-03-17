@@ -31,6 +31,7 @@ function VisionZD2102 (id, controller) {
     this.devicesSecondary       = {};
     this.devicesTamper          = {};
     this.bindings               = [];
+    this.timeouts               = {};
 }
 
 inherits(VisionZD2102, AutomationModule);
@@ -127,13 +128,12 @@ VisionZD2102.prototype.checkDevice = function(device) {
     var dataHolder  = device.instances[0].commandClasses[self.commandClass].data;
     var alarmType   = dataHolder.V1event.alarmType.value;
     var alarmSource = dataHolder[alarmType].event.value;
-    var alarmLevel  = dataHolder.V1event.level.value  === 0 ? "off" : "on";
+    var alarmLevel  = dataHolder.V1event.level.value === 0 ? "off" : "on";
     if (alarmSource === 254) {
-        console.log('[VisionZD2102] Change event matters');
-        console.log('[VisionZD2102] Change event matters - external sensor');
+        console.log('[VisionZD2102] Change event matters - external sensor:'+alarmLevel);
         self.devicesSecondary[device.id].set("metrics:level", alarmLevel);
     } else if (alarmSource === 3 && self.devicesTamper[device.id]) {
-        console.log('[VisionZD2102] Change event matters - tamper');
+        console.log('[VisionZD2102] Change event matters - tamper:'+alarmLevel);
         var tamperDevice = self.devicesTamper[device.id];
         tamperDevice.set("metrics:level", alarmLevel);
         if (alarmLevel === 'on') {
@@ -188,6 +188,10 @@ VisionZD2102.prototype.handleDevice = function(zway,device) {
         
         if (deviceTamperObject) {
             self.devicesTamper[device.id] = deviceTamperObject;
+            if (deviceTamperObject.get('metrics:level') === 'on') {
+                console.log('[VisionZD2102] Reset tamper device');
+                deviceTamperObject.set('metrics:level','off');
+            }
         }
     }
     
