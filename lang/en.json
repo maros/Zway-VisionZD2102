@@ -1,9 +1,11 @@
 {
    "banned_label" : "Excluded devices",
    "device_secondary" : "Vision ZD2102 secondary",
-   "tamper_label": "Create tamper alarm devices",
-   "tamper_helper": "Attention! Tamper alarms are correctly set, but due to a wrong device implementation not reset until you ",
-   "device_tamper": "Vision ZD2102 tamper",
+   "device_tamper" : "Vision ZD2102 tamper",
    "m_descr" : "Full support for using external sensors of the Vision ZD2102 door/window sensor<br>Check https:/github.com/maros/Zway-VisionZD2102/blob/master/README.md for detailed documentation.",
-   "m_title" : "Vision ZD2102"
+   "m_title" : "Vision ZD2102",
+   "tamper_helper" : "Attention! Some variants of the ZD2102 report changes of external sensors as tamper alarms.",
+   "tamper_label" : "Create tamper alarm devices",
+   "tamper_reset_helper" : "in seconds. Usually Vision ZD2102 does not reset the tamper alarm by itself. However it keeps sending alarm reports while it detects tampering. This setting can be used to set a timeout after the last alarm report was received",
+   "tamper_reset_label" : "Tamper alarm reset interval"
 }

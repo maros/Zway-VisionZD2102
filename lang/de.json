@@ -1,8 +1,11 @@
 {
    "banned_label" : "Ausgeschlossene Sensoren",
    "device_secondary" : "Vision ZD2102 sekundär",
-   "device_tamper": "Vision ZD2102 Manipulation",
-   "tamper_label": "Erstelle Manipulationsalarm Geräte",
+   "device_tamper" : "Vision ZD2102 Manipulation",
    "m_descr" : "Volle Unterstützung für die sekundären Kontakte von Vision ZD2102 Tür/Fenster Sensoren.<br>Siehe https:/github.com/maros/Zway-VisionZD2102/blob/master/README.md für detailliertere Dokumentation.",
-   "m_title" : "Vision ZD2102"
+   "m_title" : "Vision ZD2102",
+   "tamper_helper" : "Actung! Ältere Ausführungen des ZD2102 melden Änderungen am externen Sensor zum Teil nur als Manipulationsalarm",
+   "tamper_label" : "Erstelle Manipulationsalarm Geräte",
+   "tamper_reset_helper" : "in Sekunden. Manipulationalarm wird durch den Sensor nicht selbstständig zurückgesetzt. Stattdessen sendet das Sensor solange Manipulation erkannt wird laufen neue Alarme. Diese Option setzt den Zeitintervall nach dem letzten Alarm nachdem das virtuelle Gerät wieder deaktiviert werden soll.",
+   "tamper_reset_label" : "Manipulationalarm Zurücksetzen"
 }
