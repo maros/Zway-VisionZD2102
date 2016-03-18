@@ -3,9 +3,9 @@
    "category" : "legacy_products_workaround",
    "defaults" : {
       "description" : "__m_descr__",
-      "title" : "__m_title__",
-      "tamper": false,
-      "tamperReset": 60
+      "tamper" : false,
+      "tamperReset" : 60,
+      "title" : "__m_title__"
    },
    "dependencies" : [],
    "homepage" : "https://github.com/maros/Zway-VisionZD2102/",
@@ -13,15 +13,7 @@
    "maturity" : "stable",
    "moduleName" : "VisionZD2102",
    "options" : {
-      "fields":{
-         "tamper": {
-              "label" : "__tamper_label__",
-              "helper" : "__tamper_helper__"
-         },
-         "tamperReset": {
-             "label" : "__tamper_reset_label__",
-             "helper" : "__tamper_reset_helper__"
-         },
+      "fields" : {
          "banned" : {
             "fields" : {
                "item" : {
@@ -32,6 +24,14 @@
                }
             },
             "label" : "__banned_label__"
+         },
+         "tamper" : {
+            "helper" : "__tamper_helper__",
+            "label" : "__tamper_label__"
+         },
+         "tamperReset" : {
+            "helper" : "__tamper_reset_helper__",
+            "label" : "__tamper_reset_label__"
          }
       }
    },
@@ -41,12 +41,6 @@
    },
    "schema" : {
       "properties" : {
-         "tamperReset": {
-           "type": "number"
-         },
-         "tamper": {
-           "type": "boolean"
-         },
          "banned" : {
             "items" : {
                "datasource" : "namespaces",
@@ -55,11 +49,17 @@
                "required" : true
             },
             "type" : "array"
+         },
+         "tamper" : {
+            "type" : "boolean"
+         },
+         "tamperReset" : {
+            "type" : "number"
          }
       },
       "required" : true,
       "type" : "object"
    },
    "singleton" : true,
-   "version" : 1.01
+   "version" : 1.02
 }

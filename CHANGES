@@ -1,3 +1,10 @@
+1.02 2016 Mar 18, Fri
+    * Translation
+    * Timeout tamper state - device does not reset itself
+    * Add support for tamper alarm
+    * Update installation howto
+    * Add doc link
+
 1.01 2016 Jan 18, Mon
     * Rename title/description key to make module work in appstore
     * Update homepage and readme
