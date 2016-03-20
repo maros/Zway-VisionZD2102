@@ -214,7 +214,6 @@ VisionZD2102.prototype.addDevice = function(vDevId,defaults) {
     var self = this;
     
     defaults.metrics = _.extend(defaults.metrics,{
-        probeTitle:"General purpose",
         scaleTitle: '',
         level: 'off'
     });
@@ -224,7 +223,8 @@ VisionZD2102.prototype.addDevice = function(vDevId,defaults) {
         defaults: defaults,
         overlay: {
             visibility: (_.indexOf(self.config.banned,vDevId) === -1 ? true:false),
-            deviceType: 'sensorBinary'
+            deviceType: 'sensorBinary',
+            probeType: 'general_purpose'
         },
         moduleId: self.id
     });
