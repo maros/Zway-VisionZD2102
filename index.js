@@ -127,25 +127,29 @@ VisionZD2102.prototype.checkDevice = function(device) {
     
     var dataHolder  = device.instances[0].commandClasses[self.commandClass].data;
     var alarmType   = dataHolder.V1event.alarmType.value;
-    var alarmSource = dataHolder[alarmType].event.value;
-    var alarmLevel  = dataHolder.V1event.level.value === 0 ? "off" : "on";
-    if (alarmSource === 254) {
-        console.log('[VisionZD2102] Change event matters - external sensor:'+alarmLevel);
-        self.devicesSecondary[device.id].set("metrics:level", alarmLevel);
-    } else if (alarmSource === 3 && self.devicesTamper[device.id]) {
-        console.log('[VisionZD2102] Change event matters - tamper:'+alarmLevel);
-        var tamperDevice = self.devicesTamper[device.id];
-        tamperDevice.set("metrics:level", alarmLevel);
-        if (alarmLevel === 'on') {
-            tamperDevice.set("metrics:offTime",Math.floor(new Date().getTime() / 1000)+ self.config.tamperReset);
-            if (typeof(self.timeouts[device.id]) !== 'undefined') {
-                clearTimeout(self.timeouts[device.id]);
+    if (typeof(dataHolder[alarmType]) === 'undefined') {
+        console.error('[VisionZD2102] Missing event for '+alarmType);
+    } else {
+        var alarmSource = dataHolder[alarmType].event.value;
+        var alarmLevel  = dataHolder.V1event.level.value === 0 ? "off" : "on";
+        if (alarmSource === 254) {
+            console.log('[VisionZD2102] Change event matters - external sensor:'+alarmLevel);
+            self.devicesSecondary[device.id].set("metrics:level", alarmLevel);
+        } else if (alarmSource === 3 && self.devicesTamper[device.id]) {
+            console.log('[VisionZD2102] Change event matters - tamper:'+alarmLevel);
+            var tamperDevice = self.devicesTamper[device.id];
+            tamperDevice.set("metrics:level", alarmLevel);
+            if (alarmLevel === 'on') {
+                tamperDevice.set("metrics:offTime",Math.floor(new Date().getTime() / 1000)+ self.config.tamperReset);
+                if (typeof(self.timeouts[device.id]) !== 'undefined') {
+                    clearTimeout(self.timeouts[device.id]);
+                }
+                self.timeouts[device.id] = setTimeout(function() {
+                    self.timeouts[device.id] = undefined;
+                    tamperDevice.set("metrics:level", 'off');
+                    tamperDevice.set("metrics:offTime",null);
+                },1000*self.config.tamperReset);
             }
-            self.timeouts[device.id] = setTimeout(function() {
-                self.timeouts[device.id] = undefined;
-                tamperDevice.set("metrics:level", 'off');
-                tamperDevice.set("metrics:offTime",null);
-            },1000*self.config.tamperReset);
         }
     }
 };
