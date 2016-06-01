@@ -1,3 +1,8 @@
+1.03 2016 Jun 01, Wed
+    * Improve texts
+    * Check for missing events
+    * Set probeType
+
 1.02 2016 Mar 18, Fri
     * Translation
     * Timeout tamper state - device does not reset itself
