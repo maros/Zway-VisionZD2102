@@ -7,7 +7,7 @@ Author: Maroš Kollár <maros@k-1.com>
     based on the PhilioHW module from Poltorak Serguei <ps@z-wave.me>
 Description:
     Full support for the VisionZD2102 door/window sensor
-    
+
 ******************************************************************************/
 
 // ----------------------------------------------------------------------------
@@ -17,7 +17,7 @@ Description:
 function VisionZD2102 (id, controller) {
     // Call superconstructor first (AutomationModule)
     VisionZD2102.super_.call(this, id, controller);
-    
+
     this.langFile               = undefined;
     this.commandClass           = 0x71;
     this.manufacturerId         = 0x0109;
@@ -27,7 +27,7 @@ function VisionZD2102 (id, controller) {
        0x0104,
        0x0105
     ];
-    
+
     this.devicesSecondary       = {};
     this.devicesTamper          = {};
     this.bindings               = [];
@@ -44,25 +44,25 @@ _module = VisionZD2102;
 
 VisionZD2102.prototype.init = function(config) {
     VisionZD2102.super_.prototype.init.call(this, config);
-    
+
     var self = this;
-    
+
     self.langFile   = self.controller.loadModuleLang("VisionZD2102");
     self.zwayReg = function (zwayName) {
         var zway = global.ZWave && global.ZWave[zwayName].zway;
         if (!zway) {
             return;
         }
-        
-        // Loop all devices 
+
+        // Loop all devices
         for(var deviceIndex in zway.devices) {
             var device = zway.devices[deviceIndex];
-            
+
             // Get manufacturer and product id
             if (typeof(device) !== 'undefined'
                 && device.data.manufacturerId.value == self.manufacturerId
                 && _.indexOf(self.manufacturerProductId, device.data.manufacturerProductId.value) >= 0) {
-                
+
                 if (typeof(device.instances[0].commandClasses[self.commandClass.toString()]) !== 'undefined') {
                     console.log('[VisionZD2102] Adding devices.'+deviceIndex+'.instances.0');
                     self.handleDevice(zway,device);
@@ -70,7 +70,7 @@ VisionZD2102.prototype.init = function(config) {
             }
         }
     };
-    
+
     self.zwayUnreg = function(zwayName) {
         // detach handlers
         if (self.bindings[zwayName]) {
@@ -78,10 +78,10 @@ VisionZD2102.prototype.init = function(config) {
         }
         self.bindings[zwayName] = null;
     };
-    
+
     self.controller.on("ZWave.register", self.zwayReg);
     self.controller.on("ZWave.unregister", self.zwayUnreg);
-    
+
     // walk through existing ZWave
     if (global.ZWave) {
         for (var name in global.ZWave) {
@@ -92,29 +92,29 @@ VisionZD2102.prototype.init = function(config) {
 
 VisionZD2102.prototype.stop = function () {
     var self = this;
-    
+
     // unsign event handlers
     this.controller.off("ZWave.register", this.zwayReg);
     this.controller.off("ZWave.unregister", this.zwayUnreg);
-    
+
     _.each(self.devicesSecondary,function(deviceId,vDev) {
         self.controller.devices.remove(deviceId);
     });
     _.each(self.devicesTamper,function(deviceId,vDev) {
         self.controller.devices.remove(deviceId);
     });
-    
+
     _.each(self.bindings,function(binding) {
         binding.data.unbind(binding.func);
     });
-    
+
     this.zwayReg            = undefined;
     this.zwayUnreg          = undefined;
     this.bindings           = [];
     this.devicesTamper      = {};
     this.devicesSecondary   = {};
     this.timeouts           = {};
-    
+
     VisionZD2102.super_.prototype.stop.call(this);
 };
 
@@ -124,7 +124,7 @@ VisionZD2102.prototype.stop = function () {
 
 VisionZD2102.prototype.checkDevice = function(device) {
     var self = this;
-    
+
     var dataHolder  = device.instances[0].commandClasses[self.commandClass].data;
     var alarmType   = dataHolder.V1event.alarmType.value;
     if (typeof(dataHolder[alarmType]) === 'undefined') {
@@ -156,16 +156,16 @@ VisionZD2102.prototype.checkDevice = function(device) {
 
 VisionZD2102.prototype.handleDevice = function(zway,device) {
     var self = this;
-    
+
     var title               = device.data.givenName.value;
     var vDevSecondaryId     = 'VisionZD2102_' + device.id;
     var vDevTamperId        = 'VisionZD2102_' + device.id+'_tamper';
     var deviceSecondaryObject;
     var deviceTamperObject;
-    
+
     if (! self.controller.devices.get(vDevSecondaryId)) {
         console.log('[VisionZD2102] Add secondary device');
-        
+
         deviceSecondaryObject = self.addDevice(vDevSecondaryId,{
             probeType: "general_purpose",
             metrics: {
@@ -177,11 +177,11 @@ VisionZD2102.prototype.handleDevice = function(zway,device) {
             self.devicesSecondary[device.id] = deviceSecondaryObject;
         }
     }
-    
-    if (self.config.tamper 
+
+    if (self.config.tamper
         && ! self.controller.devices.get(vDevTamperId)) {
         console.log('[VisionZD2102] Add tamper device');
-        
+
         deviceTamperObject = self.addDevice(vDevTamperId,{
             probeType: "alarm_burglar",
             metrics: {
@@ -189,7 +189,7 @@ VisionZD2102.prototype.handleDevice = function(zway,device) {
                 title: self.langFile.device_tamper+' '+title
             }
         });
-        
+
         if (deviceTamperObject) {
             self.devicesTamper[device.id] = deviceTamperObject;
             if (deviceTamperObject.get('metrics:level') === 'on') {
@@ -198,11 +198,11 @@ VisionZD2102.prototype.handleDevice = function(zway,device) {
             }
         }
     }
-    
+
     if (deviceSecondaryObject || deviceTamperObject) {
         var dataHolder      = device.instances[0].commandClasses[self.commandClass].data;
         var dataHolderEvent = dataHolder.V1event;
-        
+
         self.bindings.push({
             data:       dataHolderEvent,
             func:       dataHolderEvent.bind(function(type) {
@@ -216,12 +216,12 @@ VisionZD2102.prototype.handleDevice = function(zway,device) {
 
 VisionZD2102.prototype.addDevice = function(vDevId,defaults) {
     var self = this;
-    
+
     defaults.metrics = _.extend(defaults.metrics,{
         scaleTitle: '',
         level: 'off'
     });
-    
+
     return self.controller.devices.create({
         deviceId: vDevId,
         defaults: defaults,
