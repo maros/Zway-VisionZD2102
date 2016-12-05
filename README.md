@@ -1,9 +1,9 @@
 # Zway-VisionZD2102
 
 The ZD2102 has two normally closed contact terminals. Due to a wrong device
-implementation only the state of the internal sensor is correctly shown in 
-the UI. This module creates one additional binary sensor for each Vision 
-ZD2102 device in your network that reflects the state of the secondary 
+implementation only the state of the internal sensor is correctly shown in
+the UI. This module creates one additional binary sensor for each Vision
+ZD2102 device in your network that reflects the state of the secondary
 external sensor input.
 
 # Configuration
@@ -24,11 +24,11 @@ device in your network.
 # Installation
 
 The prefered way of installing this module is via the "Zwave.me App Store"
-available in 2.2.0 and higher. For stable module releases no access token is 
-required. If you want to test the latest pre-releases use 'k1_beta' as 
+available in 2.2.0 and higher. For stable module releases no access token is
+required. If you want to test the latest pre-releases use 'k1_beta' as
 app store access token.
 
-For developers and users of older Zway versions installation via git is 
+For developers and users of older Zway versions installation via git is
 recommended.
 
 ```shell
@@ -52,7 +52,7 @@ git checkout -b master --track origin/master
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or any 
+the Free Software Foundation, either version 3 of the License, or any
 later version.
 
 This program is distributed in the hope that it will be useful,
