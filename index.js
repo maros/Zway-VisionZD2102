@@ -1,7 +1,7 @@
 /*** VisionZD2102 Z-Way HA module *******************************************
 
 Version: 1.03
-(c) Maroš Kollár, 2015
+(c) Maroš Kollár, 2015-2017
 -----------------------------------------------------------------------------
 Author: Maroš Kollár <maros@k-1.com>
     based on the PhilioHW module from Poltorak Serguei <ps@z-wave.me>
