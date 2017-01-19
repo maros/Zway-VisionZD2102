@@ -12,6 +12,17 @@ external sensor input.
 
 A list of sensors that should not be created
 
+## tamper
+
+Also create a device that represents the state of the taper switch.
+
+## tamperReset
+
+Older batches of the VisionZD2102 sensor do not report the end of tampering
+but keep on sending regular tampering alarms while active. If this option
+is set the tamper switch will be reset after the given time if no new tamper
+reports were received.
+
 # Events
 
 No events are emitted.
